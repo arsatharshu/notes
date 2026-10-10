@@ -1,0 +1,12 @@
+git init
+git add .
+git commit -m "Initial commit for animated note"
+git branch -M main
+git remote add origin https://github.com/arsatharshu/notes.git
+git push -u origin main
+
+
+<!-- git status
+git add .
+git commit -m "Update presentation code"
+git push origin main -->

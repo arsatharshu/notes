@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Letter For You ✨ | Open Me</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --env-width: 320px;
+            --env-height: 210px;
+        }
+
+        @media (min-width: 640px) {
+            :root {
+                --env-width: 440px;
+                --env-height: 270px;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #070913;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .font-serif-luxury {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-handwriting {
+            font-family: 'Caveat', cursive;
+        }
+
+        /* Ambient Glowing Background Lights */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.38;
+            pointer-events: none;
+            z-index: 0;
+            animation: pulseGlow 12s ease-in-out infinite alternate;
+        }
+
+        .glow-violet {
+            width: 520px;
+            height: 520px;
+            top: -120px;
+            left: -100px;
+            background: radial-gradient(circle, #ec4899, #7c3aed);
+        }
+
+        .glow-amber {
+            width: 480px;
+            height: 480px;
+            bottom: -100px;
+            right: -80px;
+            background: radial-gradient(circle, #f59e0b, #6366f1);
+            animation-delay: -6s;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.15) translate(40px, 30px); }
+            100% { transform: scale(0.9) translate(-30px, 50px); }
+        }
+
+        /* Gentle float for the unopened envelope */
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(0.6deg); }
+        }
+
+        .envelope-floating {
+            animation: floatAnim 4.5s ease-in-out infinite;
+        }
+
+        .envelope-floating.opened {
+            animation: none;
+        }
+
+        .envelope-perspective {
+            perspective: 1400px;
+            width: var(--env-width);
+            height: var(--env-height);
+            position: relative;
+        }
+
+        .envelope-stage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Envelope Back Base */
+        .envelope-back-panel {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border: 2px solid rgba(168, 85, 247, 0.35);
+            border-radius: 20px;
+            box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.75), 0 0 30px rgba(139, 92, 246, 0.25);
+            z-index: 1;
+        }
+
+        /* Top Flap (3D Origin at the top fold line) */
+        .envelope-top-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: calc(var(--env-width) / 2) solid transparent;
+            border-right: calc(var(--env-width) / 2) solid transparent;
+            border-top: calc(var(--env-height) * 0.62) solid #312e81;
+            transform-origin: top center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.25s ease;
+            z-index: 5;
+            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+            cursor: pointer;
+        }
+
+        .envelope-stage.is-open .envelope-top-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        /* Front Envelope Triangles (Pockets) */
+        .envelope-front-pocket {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            border-radius: 20px;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .pocket-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: calc(var(--env-width) / 2) solid transparent;
+            border-right: calc(var(--env-width) / 2) solid transparent;
+            border-bottom: calc(var(--env-height) * 0.64) solid #1e1b4b;
+            filter: drop-shadow(0 -5px 12px rgba(0, 0, 0, 0.45));
+        }
+
+        .pocket-left {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-bottom: var(--env-height) solid #242265;
+            border-right: calc(var(--env-width) * 0.56) solid transparent;
+            opacity: 0.9;
+        }
+
+        .pocket-right {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-bottom: var(--env-height) solid #2d2a7c;
+            border-left: calc(var(--env-width) * 0.56) solid transparent;
+            opacity: 0.9;
+        }
+
+        .wax-seal-button {
+            position: absolute;
+            top: calc(var(--env-height) * 0.54);
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 6;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .wax-seal-gem {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #fb7185 0%, #e11d48 60%, #9f1239 100%);
+            border: 2px solid rgba(254, 205, 211, 0.6);
+            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.65), inset 0 2px 5px rgba(255, 255, 255, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffe4e6;
+            font-size: 1.45rem;
+            transition: transform 0.3s ease;
+        }
+
+        .wax-seal-button:hover .wax-seal-gem {
+            transform: scale(1.1);
+            box-shadow: 0 14px 30px rgba(225, 29, 72, 0.8), inset 0 2px 7px rgba(255, 255, 255, 0.8);
+        }
+
+        .wax-seal-tag {
+            margin-top: 6px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(251, 113, 133, 0.5);
+            color: #fecdd3;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .envelope-stage.is-open .wax-seal-button {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.2);
+            pointer-events: none;
+        }
+
+        /* Dark backdrop overlay */
+        .letter-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 7, 20, 0.88);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .letter-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Small preview sheet tucked inside envelope before opening */
+        .letter-tucked {
+            position: absolute;
+            top: 6%;
+            left: 5%;
+            width: 90%;
+            height: 88%;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+            transition: transform 0.6s ease;
+        }
+
+        /* The full modal note that expands on open */
+        .letter-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -46%) scale(0.85);
+            width: 92%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #ffffff;
+            background-image: 
+                radial-gradient(circle at 100% 0%, rgba(254, 243, 199, 0.5) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(254, 226, 226, 0.4) 0%, transparent 40%);
+            color: #1e1b18; /* High-contrast crisp charcoal black */
+            border-radius: 24px;
+            border: 2px solid rgba(245, 158, 11, 0.35);
+            box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.8), 0 0 50px rgba(245, 158, 11, 0.25);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .letter-modal.revealed {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        /* Postal Stamp styling */
+        .stamp-badge {
+            border: 2px dashed #f59e0b;
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+        }
+
+        /* Golden shimmer text animation */
+        .gold-shimmer-title {
+            background: linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6, #f59e0b);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: titleShimmer 5s linear infinite;
+        }
+
+        @keyframes titleShimmer {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* Micro buttons */
+        .btn-action {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        }
+        .btn-action:hover {
+            transform: translateY(-2px) scale(1.02);
+        }
+        .btn-action:active {
+            transform: translateY(1px) scale(0.98);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between p-4 sm:p-8 min-h-screen relative selection:bg-pink-500 selection:text-white">
+
+    <!-- Ambient Glow Orbs -->
+    <div class="ambient-glow glow-violet"></div>
+    <div class="ambient-glow glow-amber"></div>
+
+    <!-- Particle Starfield Canvas -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Dark Backdrop for Modal Letter -->
+    <div id="letterBackdrop" class="letter-backdrop" onclick="closeNote()"></div>
+
+    <header class="relative z-10 w-full max-w-4xl flex items-center justify-between py-3 mb-2">
+        <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-pink-500/30 text-sm">
+                <i class="fa-solid fa-sparkles"></i>
+            </span>
+            <span class="text-xs sm:text-sm font-bold tracking-wider text-slate-300 uppercase">A Dose of Positivity</span>
+        </div>
+
+        <!-- Controls: Sound Toggle -->
+        <button 
+            id="soundToggleBtn" 
+            onclick="toggleSound()" 
+            class="px-3.5 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 text-xs font-semibold text-slate-300 flex items-center gap-2 transition backdrop-blur-md shadow-md"
+            title="Toggle Sound Effects"
+        >
+            <i id="soundIcon" class="fa-solid fa-volume-high text-amber-400"></i>
+            <span id="soundLabel">Sound ON</span>
+        </button>
+    </header>
+
+    <main class="relative z-10 flex flex-col items-center justify-center my-auto w-full max-w-xl py-6">
+
+        <!-- Top Title & Instructions -->
+        <div id="openPrompt" class="mb-7 text-center transition-all duration-500 transform cursor-pointer" onclick="openNote()">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-500/40 bg-pink-500/10 backdrop-blur-md text-pink-300 text-xs font-bold tracking-wide shadow-lg shadow-pink-500/20 animate-pulse">
+                <span>💌</span> Click the Envelope or Seal to Open
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-extrabold mt-3.5 gold-shimmer-title tracking-tight font-serif-luxury">
+                A Letter Just For You
+            </h1>
+            <p class="text-slate-400 text-xs sm:text-sm mt-2 max-w-sm mx-auto">
+                Tap the wax seal below to unfold your personal handwritten reminder.
+            </p>
+        </div>
+
+        <!-- 3D Envelope Wrapper -->
+        <div class="envelope-perspective envelope-floating" id="envelopePerspective">
+            <div class="envelope-stage" id="envelopeStage">
+                
+                <!-- Back panel -->
+                <div class="envelope-back-panel"></div>
+
+                <!-- Tucked letter sheet (visible behind flap before opening) -->
+                <div class="letter-tucked"></div>
+
+                <!-- Flap (Opens upwards in 3D) -->
+                <div class="envelope-top-flap" onclick="openNote()"></div>
+
+                <!-- Envelope Front Pockets -->
+                <div class="envelope-front-pocket">
+                    <div class="pocket-left"></div>
+                    <div class="pocket-right"></div>
+                    <div class="pocket-bottom"></div>
+                </div>
+
+                <!-- Interactive Wax Seal Badge -->
+                <div class="wax-seal-button" id="waxSealButton" onclick="openNote()">
+                    <div class="wax-seal-gem">
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                    </div>
+                    <span class="wax-seal-tag">
+                        <i class="fa-solid fa-hand-pointer mr-1"></i> TAP TO UNSEAL
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        <p class="text-[11px] text-slate-500 mt-7 text-center">
+            Tap the seal to reveal the message in high-clarity view • Fold it back anytime
+        </p>
+    </main>
+
+    <div id="letterModal" class="letter-modal p-6 sm:p-9" role="dialog" aria-modal="true" aria-labelledby="letterHeading">
+        
+        <!-- Header of the letter card -->
+        <div class="flex items-center justify-between border-b-2 border-amber-200/70 pb-3 mb-5">
+            <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-pink-500 animate-ping"></span>
+                <span class="text-xs font-extrabold tracking-widest uppercase text-amber-800">
+                    SPECIAL DELIVERY • POSITIVE VIBES
+                </span>
+            </div>
+            
+            <!-- Postage Stamp -->
+            <div class="w-11 h-11 rounded-lg stamp-badge flex flex-col items-center justify-center text-amber-800 shadow-sm rotate-3">
+                <i class="fa-solid fa-certificate text-xs text-amber-600"></i>
+                <span class="text-[9px] font-black uppercase tracking-tighter">LOVE</span>
+            </div>
+        </div>
+
+        <!-- High Contrast Letter Body with Bold & Legible Words -->
+        <div class="space-y-4">
+            <h2 id="letterHeading" class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif-luxury tracking-tight">
+                ✨ Dear Wonderful Soul,
+            </h2>
+
+            <p class="text-base sm:text-lg text-slate-800 leading-relaxed font-semibold">
+                Just in case nobody told you today:
+            </p>
+
+            <!-- Highlighted Callout Box with High Contrast -->
+            <div class="p-5 sm:p-6 rounded-2xl bg-amber-50/90 border-l-4 border-amber-500 shadow-sm">
+                <p class="text-base sm:text-lg text-slate-900 font-medium leading-relaxed italic">
+                    "You are capable of extraordinary things. Every small step you take is leading you toward greatness. Breathe deeply, believe in your magic, and remember that the world is a much brighter and warmer place with you in it!"
+                </p>
+            </div>
+
+            <p class="text-lg sm:text-xl text-amber-800 font-bold tracking-tight">
+                Keep shining brightly! 🌟
+            </p>
+
+            <!-- Handwritten Signature -->
+            <div class="pt-3 border-t border-amber-200/50 flex flex-col items-end">
+                <p class="font-handwriting text-2xl sm:text-3xl text-pink-600 font-extrabold tracking-wide">
+                    — Wishing you joy, peace & endless smiles.
+                </p>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mt-0.5">
+                    Written with warmth for you
+                </span>
+            </div>
+        </div>
+
+        <!-- Letter Footer Actions -->
+        <div class="pt-6 mt-6 border-t-2 border-amber-200/70 flex flex-wrap items-center justify-between gap-3">
+            <!-- Copy Button -->
+            <button 
+                onclick="copyNoteMessage()" 
+                class="btn-action px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-slate-900/25"
+            >
+                <i class="fa-regular fa-copy text-amber-400"></i>
+                <span id="copyBtnText">Copy Note 📋</span>
+            </button>
+
+            <!-- Sparkles & Close Buttons -->
+            <div class="flex items-center gap-2">
+                <button 
+                    onclick="fireCelebrationBurst()" 
+                    class="btn-action px-3.5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition"
+                    title="Celebrate with Sparkles"
+                >
+                    <span>🎉</span> Sparkles
+                </button>
+
+                <button 
+                    onclick="closeNote()" 
+                    class="btn-action px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-lg shadow-pink-500/30"
+                >
+                    <span>Close / Fold Back</span> 💌
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-6 z-[300] transform translate-y-24 opacity-0 transition-all duration-300 flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-slate-900/95 border border-amber-500/40 text-white text-xs sm:text-sm font-medium shadow-2xl backdrop-blur-xl">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+        <span id="toastMessage">Message copied to clipboard! ✨</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center py-3 text-xs text-slate-500 font-normal">
+        <p>Crafted with love • Share this link with someone special 💖</p>
+    </footer>
+
+    <script>
+        /* 1. Web Audio API Synthesis */
+        let audioCtx = null;
+        let isSoundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Harp / chime chord when opening
+        function playChime() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                // E-major pentatonic harp notes: E5, G#5, B5, E6
+                const freqs = [659.25, 830.61, 987.77, 1318.51];
+                freqs.forEach((f, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now + i * 0.08);
+
+                    gain.gain.setValueAtTime(0, now + i * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.18, now + i * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.9);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.95);
+                });
+            } catch (err) {}
+        }
+
+        // Soft swoosh on folding back
+        function playFoldSound() {
+            if (!isSoundEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(420, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } catch (err) {}
+        }
+
+        function toggleSound() {
+            isSoundEnabled = !isSoundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundLabel = document.getElementById('soundLabel');
+
+            if (isSoundEnabled) {
+                soundIcon.className = "fa-solid fa-volume-high text-amber-400";
+                soundLabel.textContent = "Sound ON";
+                showToast("Sound effects enabled 🔔");
+                initAudio();
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+                soundLabel.textContent = "Muted";
+                showToast("Sound muted 🔇");
+            }
+        }
+
+        /* 2. Opening & Closing Animation Flow */
+        let isNoteOpen = false;
+        const envelopeStage = document.getElementById('envelopeStage');
+        const envelopePerspective = document.getElementById('envelopePerspective');
+        const letterModal = document.getElementById('letterModal');
+        const letterBackdrop = document.getElementById('letterBackdrop');
+        const openPrompt = document.getElementById('openPrompt');
+
+        function openNote() {
+            if (isNoteOpen) return;
+            isNoteOpen = true;
+
+            initAudio();
+            playChime();
+
+            // 1. Unfold Envelope Flap in 3D
+            envelopeStage.classList.add('is-open');
+            envelopePerspective.classList.add('opened');
+
+            // 2. Hide intro title
+            openPrompt.style.opacity = '0';
+            openPrompt.style.pointerEvents = 'none';
+
+            // 3. Reveal backdrop and pop out the crystal-clear letter modal
+            letterBackdrop.classList.add('active');
+            
+            setTimeout(() => {
+                letterModal.classList.add('revealed');
+                fireCelebrationBurst();
+            }, 300);
+        }
+
+        function closeNote() {
+            if (!isNoteOpen) return;
+            isNoteOpen = false;
+
+            playFoldSound();
+
+            // Hide the letter card first
+            letterModal.classList.remove('revealed');
+            letterBackdrop.classList.remove('active');
+
+            // After letter leaves, fold the envelope back
+            setTimeout(() => {
+                envelopeStage.classList.remove('is-open');
+                envelopePerspective.classList.remove('opened');
+                openPrompt.style.opacity = '1';
+                openPrompt.style.pointerEvents = 'auto';
+            }, 400);
+
+            showToast("Note folded back safely into envelope 💌");
+        }
+
+        /* 3. Confetti Celebration Burst */
+        function fireCelebrationBurst() {
+            try {
+                if (typeof confetti === 'function') {
+                    // Golden and pink confetti bursts
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0.15, y: 0.65 },
+                        colors: ['#f59e0b', '#ec4899', '#f43f5e', '#fbbf24', '#8b5cf6']
+                    });
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 0.85, y: 0.65 },
+                        colors: ['#f59e0b', '#ec4899', '#f43f5e', '#fbbf24', '#8b5cf6']
+                    });
+                    confetti({
+                        particleCount: 40,
+                        spread: 90,
+                        origin: { y: 0.5 },
+                        colors: ['#fbbf24', '#ffffff', '#ec4899']
+                    });
+                }
+            } catch (err) {}
+        }
+
+        /* 4. Copy Note Content */
+        function copyNoteMessage() {
+            const textToCopy = `✨ Dear Wonderful Soul,\n\nJust in case nobody told you today:\n\n"You are capable of extraordinary things. Every small step you take is leading you toward greatness. Breathe deeply, believe in your magic, and remember that the world is a much brighter and warmer place with you in it!"\n\nKeep shining brightly! 🌟\n— Wishing you joy, peace & endless smiles.`;
+
+            const btnText = document.getElementById('copyBtnText');
+
+            const handleSuccess = () => {
+                btnText.textContent = "Copied! ✨";
+                showToast("Positive message copied to clipboard! 📋");
+                setTimeout(() => {
+                    btnText.textContent = "Copy Note 📋";
+                }, 2400);
+            };
+
+            const tempInput = document.createElement("textarea");
+            tempInput.value = textToCopy;
+            tempInput.style.position = "fixed";
+            tempInput.style.opacity = "0";
+            document.body.appendChild(tempInput);
+            tempInput.focus();
+            tempInput.select();
+
+            try {
+                document.execCommand('copy');
+                handleSuccess();
+            } catch (err) {
+                showToast("Could not copy text.");
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        /* 5. Toast Feedback Display */
+        let toastTimeout;
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            const messageSpan = document.getElementById('toastMessage');
+            messageSpan.textContent = msg;
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2600);
+        }
+
+        /* 6. Canvas Background Starfield */
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.6;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.alpha = Math.random() * 0.7 + 0.2;
+                this.pulseSpeed = Math.random() * 0.02 + 0.008;
+                this.color = ['#f472b6', '#fbbf24', '#a855f7', '#38bdf8', '#ffffff'][Math.floor(Math.random() * 5)];
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha += Math.sin(Date.now() * this.pulseSpeed) * 0.01;
+
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0.1, Math.min(1, this.alpha));
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function initStars() {
+            resizeCanvas();
+            stars = [];
+            const count = Math.min(80, Math.floor(window.innerWidth / 18));
+            for (let i = 0; i < count; i++) {
+                stars.push(new Star());
+            }
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                s.update();
+                s.draw();
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isNoteOpen) {
+                closeNote();
+            } else if (e.key === 'Enter' && !isNoteOpen) {
+                openNote();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initStars();
+            animateStars();
+        });
+    </script>
+</body>
+</html>
